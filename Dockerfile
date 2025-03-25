@@ -20,3 +20,6 @@ ENV STREAMLIT_SERVER_PORT=8501
 
 # Run app.py when the container launches
 CMD ["streamlit", "run", "app.py"]
+
+# How to build a docker image
+# sudo docker build -t cms-python .
