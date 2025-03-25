@@ -25,30 +25,6 @@ def load_users():
             config = yaml.load(file, Loader=SafeLoader)
     return config
 
-# Load session from file
-def load_session():
-    if os.path.exists(SESSION_FILE):
-        with open(SESSION_FILE, "r") as f:
-            return json.load(f)
-    return {}
-
-# Save session to file
-def save_session(username):
-    with open(SESSION_FILE, "w") as f:
-        json.dump({"username": username}, f)
-
-# Clear session
-def clear_session():
-    if os.path.exists(SESSION_FILE):
-        os.remove(SESSION_FILE)
-
-# Authenticate user
-def authenticate(username, password):
-    users = load_users()
-    if username in users and users[username] == password:
-        return True
-    return False
-
 # Load posts from files
 def load_posts():
     posts = []
@@ -100,12 +76,7 @@ def get_all_labels(posts):
 
 # Main app
 def main():
-    st.title("CMS as a Blog")
-
-    # Load session
-    # session = load_session()
-    # if "username" in session:
-    #     st.session_state.username = session["username"]
+    st.title("Note to Self")
 
     # Load users
     config = load_users()
@@ -156,8 +127,12 @@ def main():
         with open('../config.yaml', 'w', encoding='utf-8') as file:
             yaml.dump(config, file, default_flow_style=False, allow_unicode=True)
 
-
-    
+    # Clear label filter button
+    if st.session_state.selected_label or st.session_state.search_text:
+        if st.sidebar.button("Clear Filters"):
+            st.session_state.selected_label = None
+            st.session_state.search_text = ""  # Clear search text
+            st.rerun()
 
     # Free text search input in the sidebar
     st.sidebar.header("Search Posts")
@@ -173,13 +148,6 @@ def main():
         if st.sidebar.button(label, key=f"label_{label}"):
             st.session_state.selected_label = label
             st.session_state.search_text = ""  # Clear search text when a label is clicked
-            st.rerun()
-
-    # Clear label filter button
-    if st.session_state.selected_label or st.session_state.search_text:
-        if st.sidebar.button("Clear Filters"):
-            st.session_state.selected_label = None
-            st.session_state.search_text = ""  # Clear search text
             st.rerun()
 
     # Post creation form
@@ -219,8 +187,8 @@ def main():
 
     # Display posts
     for post in posts:
-        st.markdown(f"### {post['title']}")
-        st.caption(f"By {post['author']} on {post['timestamp']}")
+        st.markdown(f"### {post['title']}", unsafe_allow_html=False)
+        st.caption(f"By {post['author']} on {post['timestamp'].split('.')[0]}")
         if os.path.exists(os.path.join(UPLOADS_DIR, f"{post['id']}.png")):
             st.image(os.path.join(UPLOADS_DIR, f"{post['id']}.png"))
         st.markdown(post["content"])
